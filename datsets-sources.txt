@@ -1,0 +1,12 @@
+vortex7.local
+
+Anomailes processades:
+/home/albert/Escriptori/SEASONAL/anom_ahead/20200301
+
+Dades:
+/media/albert/VESTAS/SEAS5/2020
+sf.anomaly_ensmean
+
+kaggle
+
+
