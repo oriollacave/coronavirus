@@ -9,14 +9,22 @@ from sklearn.linear_model import LinearRegression
 basepath="/home/oriol/work/coronavirus"
 datapath=basepath+"/data"
 
-#OPTIONS
+
+######################################################
+######################################################
+##########                                 ###########
+##########       O P T I O N S             ###########
+##########                                 ###########
+######################################################
+######################################################
 plot=0
 debug=0
 #minimum number of cases (last day value > minfilter)
-mindeathsfilter=50
+mindeathsfilter=10
 #PARAMETRIC VALUES
 deathRatio=0.01
 detectionRatio=0.05
+######################################################
 #COVID FILE TO IMPORT
 filecovid="time_series_19-covid-Deaths-nonZero.csv"
 filecovidconfirmed="time_series_covid19_confirmed_global.csv"
@@ -24,6 +32,13 @@ filecoviddeaths="time_series_covid19_deaths_global.csv"
 filecovidrecovered="time_series_covid19_recovered_global.csv"
 
 print ("Data path:"+basepath)
+######################################################
+######################################################
+##########                                 ###########
+##########       M  A  I  N                ###########
+##########                                 ###########
+######################################################
+######################################################
 
 ### PLAY CODE OUTSIDE FUNCTIONS.
 def main():
@@ -67,7 +82,7 @@ def main():
 
 #OPTIONS: ALL OR MANUALLY SELECTED COUNTRIES
 #A)SELECTED MANUALLY LIST OF COUNTRIES
-	countries=['Spain','US','France','Germany','Italy']
+#	countries=['Sweden','Switzerland','Spain','US','France','Germany','Italy']
 #B)ALL COUNTRIES (that pass filter condition)
 	countries=dfmostlikelyshifts.index.values
 	print(countries)
@@ -82,12 +97,10 @@ def main():
 		detectionRatios=np.append(detectionRatios,detectionRatiotmp)
 		
 	data = {'country':countries,'detectionRatio':detectionRatios,'maxR0':maxRs}
-	print(data)
 	dfdetectionRatios=pd.DataFrame(data)
 
 	dfdetectionRatios=dfdetectionRatios.set_index('country')
 	df=pd.concat([dfmostlikelyshifts,dfdetectionRatios,dftt],axis=1,join='inner')
-	print(df)
 	plt.close()
 	pal=sns.color_palette("RdBu", n_colors=7)
 	cmap = sns.cubehelix_palette(rot=-.2, as_cmap=True)
@@ -128,11 +141,9 @@ def main():
 
 	dfx=dfc.apply(lambda x: x[ x < 100 ], axis=0)
 	dfxx=dfc.apply(lambda x: x[ x >1 ], axis=0)
-	print(dfxx.head())
 	dfxxx=dfxx.reset_index()
 	
 	dfxxs=dfxx.apply(lambda row: getdaysgrow(row),axis=0)
-	print(dfxxs)
 	exit()
 
 	t.name=None
@@ -332,15 +343,19 @@ def countryPlots(dfc,dfd,dfr,country,nshift):
 
 #Compute R parameter
 	dfR=computeRdf(dfincremental)
-	print(dfR)
+#	print(dfR.loc[['deaths']])
+#	print(dfR.loc['deaths'].replace([np.inf, -np.inf], np.nan).dropna(axis=1))
+#	exit()
 ## TODO make 5 max, average 4 not max of it, return
-	maxRs=dfR.nlargest(10,'deaths')['deaths'][2:-2].mean()
-	print(country)
-	print(dfR)
-	print(maxRs)
+	print(dfR['deaths'])
+	dfserie=dfR['deaths']
+	df=pd.DataFrame(data=dfserie)
+	df=df[~df.isin([np.nan, np.inf, -np.inf]).any(1)]
+	maxRs=dfR.nlargest(7,'deaths')['deaths'][2:-2].mean()
+	maxRsv2=df.nlargest(10,'deaths')[2:-2].mean()
 	if plot == 1:
 		plotLinesCountry(dfR,'Rparameter',country)
-	return detectionRatio,maxRs
+	return detectionRatio,maxRsv2[0]
 
 
 
