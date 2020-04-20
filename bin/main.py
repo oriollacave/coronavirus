@@ -17,7 +17,7 @@ datapath=basepath+"/data"
 ##########                                 ###########
 ######################################################
 ######################################################
-plot=0
+plot=1
 debug=0
 #minimum number of cases (last day value > minfilter)
 mindeathsfilter=10
@@ -70,22 +70,26 @@ def main():
 ### analysis
 	print("MOST LIKELY SHIFT FOR EACH COUNTRY")
 	dfmostlikelyshifts=countriesAnalysis(dfc,dfd,dfr).set_index(['country'])
+#OPTIONS: ALL OR MANUALLY SELECTED COUNTRIES
+#A)SELECTED MANUALLY LIST OF COUNTRIES
+	countries=['Sweden','Switzerland','Spain','US','France','Germany','Italy']
+	countries=['Sweden','Spain','US','France','Germany','Italy']
+#B)ALL COUNTRIES (that pass filter condition)
+#	countries=dfmostlikelyshifts.index.values
+	print(countries)
 	if plot == 1:
 		print("PLOT ALL COUNTRIES")
 ### plot countries together
-		plotCountries(dfds,'deaths')
-		plotCountries(dfcs,'confirmed')
-		plotCountries(dfrs,'recovered')
+#some tweaks: differences and rolling
+		dfcustom=dfds[countries].diff().rolling(window=3).mean()
+		plotCountries(dfcustom,'deaths')
+		plotCountries(dfds[countries],'deaths')
+		plotCountries(dfcs[countries],'confirmed')
+		plotCountries(dfrs[countries],'recovered')
 
 #### COUNTRY PLOTS
 	print("LOOP COUNTRIES--> detectionRatio and maxR0")
 
-#OPTIONS: ALL OR MANUALLY SELECTED COUNTRIES
-#A)SELECTED MANUALLY LIST OF COUNTRIES
-#	countries=['Sweden','Switzerland','Spain','US','France','Germany','Italy']
-#B)ALL COUNTRIES (that pass filter condition)
-	countries=dfmostlikelyshifts.index.values
-	print(countries)
 	detectionRatios=np.empty(0)
 	maxRs=np.empty(0)
 	for country in countries:
